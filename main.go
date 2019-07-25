@@ -1,7 +1,7 @@
 package main
 
 import (
-	"PacketCollector/core"
+	"github.com/sangyun-han/pktCollector/engine"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -10,6 +10,7 @@ import (
 
 //var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 //var memprofile = flag.String("memprofile", "", "write mem profile to `file`")
+
 
 func main() {
 	//flag.Parse()
@@ -35,12 +36,12 @@ func main() {
 	//	if err := pprof.WriteHeapProfile(f); err != nil {
 	//		log.Fatal("could not write memory profile: ", err)
 	//	}
-	//}
+	//
 
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	go core.Capture()
+	go engine.Capture()
 	time.Sleep(30 * time.Second)
 }
