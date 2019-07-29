@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/pcap"
 	"github.com/sangyun-han/pktCollector/engine"
 	"log"
 	"net/http"
@@ -13,35 +15,46 @@ import (
 
 
 func main() {
-	//flag.Parse()
-	//if *cpuprofile != "" {
-	//	f, err := os.Create(*cpuprofile)
-	//	if err != nil {
-	//		log.Fatal("could not create CPU profile: ", err)
-	//	}
-	//	defer f.Close()
-	//	if err := pprof.StartCPUProfile(f); err != nil {
-	//		log.Fatal("could not start CPU profile: ", err)
-	//	}
-	//	defer pprof.StopCPUProfile()
-	//}
-	//
-	//if *memprofile != "" {
-	//	f, err := os.Create(*memprofile)
-	//	if err != nil {
-	//		log.Fatal("could not create memory profile: ", err)
-	//	}
-	//	defer f.Close()
-	//	runtime.GC() // get up-to-date statistics
-	//	if err := pprof.WriteHeapProfile(f); err != nil {
-	//		log.Fatal("could not write memory profile: ", err)
-	//	}
-	//
-
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
-	go engine.Capture()
-	time.Sleep(30 * time.Second)
+	var workerNum  = 1
+	var channelBufferSize = 100
+	var dataChannel = make(chan []byte, channelBufferSize)
+
+	handle, err := pcap.OpenLive("en5", 65536, false, 10 * time.Millisecond)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer handle.Close()
+
+
+	menu := 1
+
+	for i := 0; i < workerNum; i += 1 {
+		w := engine.NewWorker()
+
+		if menu == 1 {
+
+			go w.Decode(dataChannel)
+		} else {
+
+		}
+
+	}
+
+	//go func() {
+	//	for {
+	//		data, _, _ := handle.ZeroCopyReadPacketData()
+	//		dataChannel <- data
+	//		//fmt.Println(data)
+	//	}
+	//}()
+
+	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	wo := engine.NewWorker()
+	go wo.Decode2(packetSource)
+
+	time.Sleep(1 * time.Second)
 }
