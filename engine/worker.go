@@ -22,7 +22,7 @@ type Worker struct {
 func NewWorker() *Worker {
 	var worker = Worker{}
 
-	worker.parser = gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &worker.ip4, &worker.ip6, &worker.tcp, &worker.udp)
+	worker.parser = gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &worker.eth, &worker.ip4, &worker.ip6, &worker.tcp, &worker.udp)
 	worker.decoded = []gopacket.LayerType{}
 
 	return &worker
@@ -40,18 +40,18 @@ func (w *Worker) Decode(data chan []byte) {
 				count++
 				fmt.Println(count)
 
-			case layers.LayerTypeUDP:
-				fmt.Println("UDP", w.udp.SrcPort, w.udp.DstPort)
-				count++
-				fmt.Println(count)
-
-			case layers.LayerTypeIPv6:
-				fmt.Println("IPv6 : ", w.ip6.SrcIP, w.ip6.DstIP)
-				count++
-				fmt.Println(count)
-
+			//case layers.LayerTypeUDP:
+			//	fmt.Println("UDP", w.udp.SrcPort, w.udp.DstPort)
+			//	count++
+			//	fmt.Println(count)
+			//
+			//case layers.LayerTypeIPv6:
+			//	fmt.Println("IPv6 : ", w.ip6.SrcIP, w.ip6.DstIP)
+			//	count++
+			//	fmt.Println(count)
+			//
 			case layers.LayerTypeIPv4:
-				fmt.Println("IPv4 : ", w.ip4)
+				fmt.Println("IPv4 : ", w.ip4.NetworkFlow())
 				count++
 				fmt.Println(count)
 

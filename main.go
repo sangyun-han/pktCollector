@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 	"github.com/sangyun-han/pktCollector/engine"
 	"log"
@@ -30,6 +29,7 @@ func main() {
 	defer handle.Close()
 
 
+
 	menu := 1
 
 	for i := 0; i < workerNum; i += 1 {
@@ -44,17 +44,17 @@ func main() {
 
 	}
 
-	//go func() {
-	//	for {
-	//		data, _, _ := handle.ZeroCopyReadPacketData()
-	//		dataChannel <- data
-	//		//fmt.Println(data)
-	//	}
-	//}()
+	go func() {
+		for {
+			data, _, _ := handle.ZeroCopyReadPacketData()
+			dataChannel <- data
+			//fmt.Println(data)
+		}
+	}()
 
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	wo := engine.NewWorker()
-	go wo.Decode2(packetSource)
+	//packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	//wo := engine.NewWorker()
+	//go wo.Decode2(packetSource)
 
 	time.Sleep(1 * time.Second)
 }
