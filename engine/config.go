@@ -7,4 +7,5 @@ type InterfacesConfig struct {
 	BpfFilter		bool	`config:"bpf_filter"`
 	SnapLen			int		`config:"snaplen"`
 	BufferSizeMb	int
+	DefaultOpt		bool
 }
