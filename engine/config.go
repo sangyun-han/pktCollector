@@ -9,3 +9,7 @@ type InterfacesConfig struct {
 	BufferSizeMb	int
 	DefaultOpt		bool
 }
+
+type TsdbConfig struct {
+
+}

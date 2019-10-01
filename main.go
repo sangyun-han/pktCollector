@@ -1,64 +1,47 @@
 package main
 
 import (
-	"github.com/sangyun-han/pktCollector/engine"
-	"log"
-	"net/http"
-	_ "net/http/pprof"
+	"fmt"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcapgo"
 	"time"
 )
 
-
 func main() {
-
-	config := engine.InterfacesConfig{
-		Device:		"enp0s3",
-		BpfFilter:	false,
-		DefaultOpt:	false,
-	}
-
-
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
-	var workerNum  = 10
-	var channelBufferSize = 100
-	var dataChannel = make(chan []byte, channelBufferSize)
-
-
-
-	//afpacketHandle, err := afpacket.NewTPacket(afpacket.OptInterface("enp0s3"))
-	afpacketHandle, err := engine.OpenAFPacket("", &config)
-
-
+	fmt.Println("test1")
+	handle, err := pcapgo.NewEthernetHandle("enp0s3")
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer afpacketHandle.TPacket.Close()
-
-	for i := 0; i < workerNum; i += 1 {
-		w := engine.NewWorker()
-		go w.Decode(dataChannel)
-
+		panic(err)
 	}
 
+	var eth layers.Ethernet
+	var ip4 layers.IPv4
+	var ip6 layers.IPv6
+	var tcp layers.TCP
+
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &tcp)
+	decoded := []gopacket.LayerType {}
 	go func() {
+		fmt.Println("goroutine")
 		for {
-			//data, _, _ := handle.ZeroCopyReadPacketData()
-			//dataChannel <- data
-			//fmt.Println(data)
-			pkt, _, err := afpacketHandle.TPacket.ZeroCopyReadPacketData()
-			if err != nil {
-				log.Fatal(err)
-			}
-			dataChannel <- pkt
-		}
-	}()
+			data, info, _ := handle.ZeroCopyReadPacketData()
+			parser.DecodeLayers(data, &decoded)
+			fmt.Println(info)
+			for _, layerType := range decoded {
+				switch layerType {
 
-	//packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	//wo := engine.NewWorker()
-	//go wo.Decode2(packetSource)
+				case layers.LayerTypeIPv6:
+					fmt.Println(ip6.SrcIP, ip6.DstIP)
+
+				case layers.LayerTypeIPv4:
+					fmt.Println(ip4.SrcIP, ip4.DstIP)
+				}
+			}
+		}
+	} ()
+
 
 	time.Sleep(10 * time.Second)
+
 }
